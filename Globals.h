@@ -46,3 +46,5 @@ unsigned long B_Min_Max_Last;
 
 int SetupVal;
 bool SetupStart = true;
+
+byte PulseCount = 0;

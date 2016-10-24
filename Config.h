@@ -6,6 +6,9 @@
 #define ScrSaver_Duration 30   // Screensaver duration in seconds
 #define ScrSaver_Interval 15   // Screensaver interval in minutes must be a devider of 60 eg: 1,2,3,4,5,6,10,12,15,20,30
 
+#define PulsesPerSec 20        // total pulses send to the display every seccond, used for blinking and screensaver
+#define PulseInterval 1000/PulsesPerSec 
+
 #define On_hr 7                // 
 #define On_min 30               // 
 #define Off_hr 0               // 
