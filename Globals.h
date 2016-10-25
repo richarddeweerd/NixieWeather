@@ -9,7 +9,6 @@ Button But_Down(Button_Down_Pin, 1, 20);
 
 byte SensorCount=0;
 
-TimeElements tm, te;
 TimeElements temp_tm;
 
 byte Run_Mode = 0;

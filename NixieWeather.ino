@@ -40,13 +40,13 @@ void setup() {
   
   //init all time registers:
   CheckDST(now());
-  breakTime ((now()+TZ_offset+DST_offset),tm);
+  breakTime ((now()+TZ_offset+DST_offset),Nixie.Time);
   
-  CurrentMin=tm.Minute;
-  CurrentHour=tm.Hour;
-  CurrentDay=tm.Day;
-  CurrentMonth=tm.Month;
-  CurrentYear=tm.Year;
+  CurrentMin=Nixie.Time.Minute;
+  CurrentHour=Nixie.Time.Hour;
+  CurrentDay=Nixie.Time.Day;
+  CurrentMonth=Nixie.Time.Month;
+  CurrentYear=Nixie.Time.Year;
 
   bmp085Calibration(); //Init barometer
   Nixie.Baro.SetTemp(bmp085GetTemperature(bmp085ReadUT()));
@@ -69,7 +69,7 @@ void loop() {
 
     Nixie.PulseCount=0;
     CurrentTime = now();
-    breakTime ((CurrentTime + TZ_offset + DST_offset),tm);
+    breakTime ((CurrentTime + TZ_offset + DST_offset),Nixie.Time);
 
     if (SecCounter == SecsPerStep){
       SecCounter = 0;
@@ -88,33 +88,33 @@ void loop() {
       }      
     }
        
-    if (tm.Second % 6 == 1){
+    if (Nixie.Time.Second % 6 == 1){
       // read barometer every 10 seconds
       Nixie.Baro.SetTemp(bmp085GetTemperature(bmp085ReadUT()));
       Nixie.Baro.SetPressure(bmp085GetPressure(bmp085ReadUP()),(CurrentTime + TZ_offset + DST_offset));
     }
     
-    if (tm.Minute != CurrentMin){
+    if (Nixie.Time.Minute != CurrentMin){
       //New Minute!
-      CurrentMin=tm.Minute;
+      CurrentMin=Nixie.Time.Minute;
       // Check if nighmode is enabled
       if (WakeUp == 0){
-        NightMode_on(tm.Hour, tm.Minute);
+        NightMode_on(Nixie.Time.Hour, Nixie.Time.Minute);
       }
-      if (tm.Hour != CurrentHour){
+      if (Nixie.Time.Hour != CurrentHour){
         //New Hour!
-        CurrentHour=tm.Hour;
+        CurrentHour=Nixie.Time.Hour;
         //check if DST starts
         CheckDST(now());
-        if (tm.Day != CurrentDay){
+        if (Nixie.Time.Day != CurrentDay){
           //New Day!
-          CurrentDay=tm.Day;
-          if (tm.Month != CurrentMonth){
+          CurrentDay=Nixie.Time.Day;
+          if (Nixie.Time.Month != CurrentMonth){
             //New Month!
-            CurrentMonth=tm.Month;
-            if (tm.Year != CurrentYear){
+            CurrentMonth=Nixie.Time.Month;
+            if (Nixie.Time.Year != CurrentYear){
               //New Year!
-              CurrentYear=tm.Year;
+              CurrentYear=Nixie.Time.Year;
             }
           }
         }
@@ -155,11 +155,11 @@ void loop() {
       //Normal Operation
       
       //Clock part:
-      if ((tm.Second % 20 == 18)||(tm.Second % 20 == 19)){
-          Nixie.ShowDate(tm.Day, tm.Month, tm.Year);
+      if ((Nixie.Time.Second % 20 == 18)||(Nixie.Time.Second % 20 == 19)){
+          Nixie.ShowDate(Nixie.Time.Day, Nixie.Time.Month, Nixie.Time.Year);
           
       } else {
-          Nixie.ShowTime(tm.Hour, tm.Minute, tm.Second);
+          Nixie.ShowTime(Nixie.Time.Hour, Nixie.Time.Minute, Nixie.Time.Second);
       }
   
       //Weather info
@@ -211,7 +211,7 @@ void loop() {
         case 0:     
           //set time
           if (SetupStart){
-            SetupVal = tm.Hour;
+            SetupVal = Nixie.Time.Hour;
             SetupStart = false;
           }
           if (But_Front.status(3000)){            
@@ -219,22 +219,22 @@ void loop() {
               case 1:
                 Setup_Subitem++;
                 temp_tm.Hour = SetupVal;
-                temp_tm.Minute = tm.Minute;
-                temp_tm.Second = tm.Second;
-                temp_tm.Day = tm.Day;
-                temp_tm.Month = tm.Month;
-                temp_tm.Year = tm.Year;
+                temp_tm.Minute = Nixie.Time.Minute;
+                temp_tm.Second = Nixie.Time.Second;
+                temp_tm.Day = Nixie.Time.Day;
+                temp_tm.Month = Nixie.Time.Month;
+                temp_tm.Year = Nixie.Time.Year;
                 RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
                 setSyncProvider(RTC.get);
-                SetupVal = tm.Minute;
+                SetupVal = Nixie.Time.Minute;
                 break;
               case 2:
-                temp_tm.Hour = tm.Hour;
+                temp_tm.Hour = Nixie.Time.Hour;
                 temp_tm.Minute = SetupVal;
-                temp_tm.Second = tm.Second;
-                temp_tm.Day = tm.Day;
-                temp_tm.Month = tm.Month;
-                temp_tm.Year = tm.Year;
+                temp_tm.Second = Nixie.Time.Second;
+                temp_tm.Day = Nixie.Time.Day;
+                temp_tm.Month = Nixie.Time.Month;
+                temp_tm.Year = Nixie.Time.Year;
                 RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
                 setSyncProvider(RTC.get);
                 
@@ -244,7 +244,7 @@ void loop() {
                 Setup_Item = 1;
                 Setup_Subitem = 1;
                 SetupStart = true;
-                SetupVal = tm.Day;
+                SetupVal = Nixie.Time.Day;
 
                 break;
             }
@@ -262,7 +262,7 @@ void loop() {
                 changed = 1;            
                 SetupVal = decMax(SetupVal, 0, 23);
               }
-              Nixie.SetupClock(SetupVal, tm.Minute, tm.Second, Setup_Subitem, changed);
+              Nixie.SetupClock(SetupVal, Nixie.Time.Minute, Nixie.Time.Second, Setup_Subitem, changed);
               break;
             case 2:
               //Minute
@@ -275,21 +275,21 @@ void loop() {
                 changed = 1;            
                 SetupVal = decMax(SetupVal, 0, 59);
               }
-              Nixie.SetupClock(tm.Hour, SetupVal, tm.Second, Setup_Subitem, changed);
+              Nixie.SetupClock(Nixie.Time.Hour, SetupVal, Nixie.Time.Second, Setup_Subitem, changed);
               break;
             case 3:
               //Sec
               if (But_Up.status(1000,250)||But_Down.status(1000,400)){
-                temp_tm.Hour = tm.Hour;
-                temp_tm.Minute = tm.Minute;
+                temp_tm.Hour = Nixie.Time.Hour;
+                temp_tm.Minute = Nixie.Time.Minute;
                 temp_tm.Second = 0;
-                temp_tm.Day = tm.Day;
-                temp_tm.Month = tm.Month;
-                temp_tm.Year = tm.Year;
+                temp_tm.Day = Nixie.Time.Day;
+                temp_tm.Month = Nixie.Time.Month;
+                temp_tm.Year = Nixie.Time.Year;
                 RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
                 setSyncProvider(RTC.get);
               }
-              Nixie.SetupClock(tm.Hour, tm.Minute, tm.Second, Setup_Subitem, changed);                
+              Nixie.SetupClock(Nixie.Time.Hour, Nixie.Time.Minute, Nixie.Time.Second, Setup_Subitem, changed);                
               break;
           }
           break;
@@ -301,35 +301,35 @@ void loop() {
             switch (Setup_Subitem){
               case 1:
                 Setup_Subitem++;
-                temp_tm.Hour = tm.Hour;
-                temp_tm.Minute = tm.Minute;
-                temp_tm.Second = tm.Second;
+                temp_tm.Hour = Nixie.Time.Hour;
+                temp_tm.Minute = Nixie.Time.Minute;
+                temp_tm.Second = Nixie.Time.Second;
                 temp_tm.Day = SetupVal;
-                temp_tm.Month = tm.Month;
-                temp_tm.Year = tm.Year;
+                temp_tm.Month = Nixie.Time.Month;
+                temp_tm.Year = Nixie.Time.Year;
                 RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
                 setSyncProvider(RTC.get);
-                SetupVal = tm.Month;
+                SetupVal = Nixie.Time.Month;
                 break;
               case 2:
-                temp_tm.Hour = tm.Hour;
-                temp_tm.Minute = tm.Minute;
-                temp_tm.Second = tm.Second;
-                temp_tm.Day = tm.Day;
+                temp_tm.Hour = Nixie.Time.Hour;
+                temp_tm.Minute = Nixie.Time.Minute;
+                temp_tm.Second = Nixie.Time.Second;
+                temp_tm.Day = Nixie.Time.Day;
                 temp_tm.Month = SetupVal;
-                temp_tm.Year = tm.Year;
+                temp_tm.Year = Nixie.Time.Year;
                 RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
                 
                 setSyncProvider(RTC.get);      
-                SetupVal = tm.Year;                
+                SetupVal = Nixie.Time.Year;                
                 Setup_Subitem++;
                 break;
               case 3:
-                temp_tm.Hour = tm.Hour;
-                temp_tm.Minute = tm.Minute;
-                temp_tm.Second = tm.Second;
-                temp_tm.Day = tm.Day;
-                temp_tm.Month = tm.Month;
+                temp_tm.Hour = Nixie.Time.Hour;
+                temp_tm.Minute = Nixie.Time.Minute;
+                temp_tm.Second = Nixie.Time.Second;
+                temp_tm.Day = Nixie.Time.Day;
+                temp_tm.Month = Nixie.Time.Month;
                 temp_tm.Year = SetupVal;
                 RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
                 setSyncProvider(RTC.get);
@@ -352,7 +352,7 @@ void loop() {
                 changed = 1;            
                 SetupVal = decMax(SetupVal, 1, 31);
               }
-              Nixie.SetupDate(SetupVal, tm.Month, tm.Year, Setup_Subitem, changed);
+              Nixie.SetupDate(SetupVal, Nixie.Time.Month, Nixie.Time.Year, Setup_Subitem, changed);
               break;
             case 2:
               //Month
@@ -365,7 +365,7 @@ void loop() {
                 changed = 1;            
                 SetupVal = decMax(SetupVal, 1, 12);
               } 
-              Nixie.SetupDate(tm.Day, SetupVal, tm.Year, Setup_Subitem, changed);
+              Nixie.SetupDate(Nixie.Time.Day, SetupVal, Nixie.Time.Year, Setup_Subitem, changed);
               break;
             case 3:
               //Year
@@ -378,7 +378,7 @@ void loop() {
                 changed = 1;            
                 SetupVal = decMax(SetupVal, 0, 99);
               }
-              Nixie.SetupDate(tm.Day, tm.Month, SetupVal, Setup_Subitem, changed);                
+              Nixie.SetupDate(Nixie.Time.Day, Nixie.Time.Month, SetupVal, Setup_Subitem, changed);                
               break;
           }
           break;

@@ -8,6 +8,7 @@ void CheckDST(unsigned long cur_time){
   int i;
   time_t DST_start, DST_end;
   byte dst_on = 0;
+  TimeElements te;
   
   for (i = 0; i <= 15; i = i + 1) {
     if ((DST_dates[i][0]+1970) == (year())){
