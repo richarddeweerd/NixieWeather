@@ -190,7 +190,7 @@ void ParsePacket(byte *Packet) {
     SensorNumber = 0;
     // Check if sensoraddress is known
     for (j=1; j<=SensorCount; j++) {
-      if (RFSensor[j].Address == sensor){
+      if (Nixie.RFSensor[j].Address == sensor){
         SensorNumber = j;
       }       
     }
@@ -209,17 +209,19 @@ void ParsePacket(byte *Packet) {
     
     if (SensorNumber == 0){
       //new sensor
-      SensorCount++;
-      SensorNumber = SensorCount;
-      RFSensor[SensorNumber].Init(sensor);
+      if (SensorCount < MaxSensors){
+        SensorCount++;
+        SensorNumber = SensorCount;
+        Nixie.RFSensor[SensorNumber].Init(sensor);        
+      }
     }
     
     switch (PacketType){
       case 1:
-        RFSensor[SensorNumber].SetTemp(tempC, (CurrentTime + TZ_offset + DST_offset));
+        Nixie.RFSensor[SensorNumber].SetTemp(tempC, (CurrentTime + TZ_offset + DST_offset));
         break;
       case 2:
-        RFSensor[SensorNumber].SetHum(hum, (CurrentTime + TZ_offset + DST_offset));
+        Nixie.RFSensor[SensorNumber].SetHum(hum, (CurrentTime + TZ_offset + DST_offset));
         break; 
     } 
   }

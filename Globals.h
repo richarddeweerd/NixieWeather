@@ -1,7 +1,7 @@
 Nixie_Display Nixie(Clock_Latch_Pin, Clock_Clock_Pin, Clock_Data_Pin, Weather_Latch_Pin, Weather_Clock_Pin, Weather_Data_Pin, Clock_High_Dot_Pin, Clock_Low_Dot_Pin, Weather_Dot_Pin, Weather_Min_Dot_Pin, Weather_Max_Dot_Pin, BackLight_Pin, HV_Pin);
 
-Baro_Sensor Baro;
-RF_Sensor RFSensor[10];
+//Baro_Sensor Baro;
+//RF_Sensor RFSensor[2];
 
 Button But_Front(Button_Front_Pin, 1, 20);
 Button But_Up(Button_Up_Pin, 1, 20);
@@ -47,4 +47,4 @@ unsigned long B_Min_Max_Last;
 int SetupVal;
 bool SetupStart = true;
 
-byte PulseCount = 0;
+byte WakeUp = 0;

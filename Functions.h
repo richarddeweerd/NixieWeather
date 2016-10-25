@@ -80,8 +80,11 @@ void NightMode_on(byte h, byte m){
   }
   if ((Nixie.NightMode == 1) && (stat == 0)){
     Nixie.NightmodeEnd();
+    Run_Mode = 0;
   }
 
   if ((Nixie.NightMode == 0) && (stat == 1)){
-    Nixie.NightmodeStart();  } 
+    Nixie.NightmodeStart();
+    Run_Mode = 3;
+  } 
 }

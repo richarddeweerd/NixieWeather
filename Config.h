@@ -19,6 +19,10 @@
 
 #define _DST_offset 3600
 
+#define WakeUp_time 10
+
+#define MaxSensors 2
+
 const byte DST_dates [16] [5] = {
   {45, 3, 29, 10, 25},
   {46, 3, 27, 10, 30},
