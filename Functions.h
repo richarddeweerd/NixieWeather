@@ -2,6 +2,40 @@ void InitIO(){
   pinMode(Receiver_Pin, INPUT);
 }
 
+void InitEEprom(){
+  EEPROM.write(EEpromDatePerMin,      3);
+  EEPROM.write(EEpromDateLength,      2);
+  EEPROM.write(EEpromWeatherLength,   2);
+  EEPROM.write(EEpromScrLength,       20);
+  EEPROM.write(EEpromScrPerHour,      6);
+  EEPROM.write(EEpromBackLightDay,    250);
+  EEPROM.write(EEpromBackLightNight,  50);
+  EEPROM.write(EEpromDayStartHour,    7);
+  EEPROM.write(EEpromDayStartMin,     30);
+  EEPROM.write(EEpromDayEndHour,      0);
+  EEPROM.write(EEpromDayEndMin,       30);
+  EEPROM.write(EEpromWakeup,          20);
+  EEPROM.write(EEpromTimeZone,        25);
+}
+
+void ReadConfig(){
+  Date_Interval = EEPROM.read(EEpromDatePerMin);
+  Date_Interval = (int) 60 / Date_Interval;
+  Date_Lenght = EEPROM.read(EEpromDateLength);
+  SecsPerStep = EEPROM.read(EEpromWeatherLength);
+  ScrSaver_Duration = EEPROM.read(EEpromScrLength);
+  ScrSaver_Interval = EEPROM.read(EEpromScrPerHour);
+  Nixie.BackLightDay = EEPROM.read(EEpromBackLightDay);
+  Nixie.BackLightNight = EEPROM.read(EEpromBackLightNight);
+  //EEPROM.read(EEpromDayStartHour);
+  //EEPROM.read(EEpromDayStartMin);
+  //EEPROM.read(EEpromDayEndHour);
+  //EEPROM.read(EEpromDayEndMin);
+  WakeUp_time = EEPROM.read(EEpromWakeup);
+  int t = EEPROM.read(EEpromTimeZone);  
+  TZ_offset = (t-24) * 3600;
+}
+
 void CheckDST(unsigned long cur_time){
   DST_offset=0;
 

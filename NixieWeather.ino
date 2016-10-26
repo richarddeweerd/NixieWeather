@@ -5,6 +5,7 @@
 #include "TimeLib.h"
 #include "DS3231RTC.h"
 #include "Button.h"
+#include <EEPROM.h>
 
 #include "Nixie_Sensor.h"
 
@@ -28,16 +29,17 @@ void setup() {
       //reset date and time to 25-05-2016 00:00
       RTC.set(1464127200);
       setSyncProvider(RTC.get);
+      InitEEprom();
     }
   }
+  InitEEprom(); //Needed during development!!!!!!!!!!!!!!!!!
+  ReadConfig();
   
-  
-  digitalWrite(HV_Pin, HIGH);                   // Turn HV on
-  Nixie.DimIntensity = BackLight_Bright;
+  Nixie.DimIntensity = Nixie.BackLightDay;  
   Nixie.Disp_Test(); 
   
-  
-  
+
+ 
   //init all time registers:
   CheckDST(now());
   breakTime ((now()+TZ_offset+DST_offset),Nixie.Time);
@@ -70,7 +72,11 @@ void loop() {
     Nixie.PulseCount=0;
     CurrentTime = now();
     breakTime ((CurrentTime + TZ_offset + DST_offset),Nixie.Time);
-
+    
+    if (((CurrentMin % (60/ScrSaver_Interval)) == 0)&&((60 - ScrSaver_Duration) == Nixie.Time.Second )){
+       //Nixie.ScreenSaverStart(ScrSaver_Duration,tm.Hour,tm.Minute, tm.Second, Baro.Pressure);
+    }
+    
     if (SecCounter == SecsPerStep){
       SecCounter = 0;
       StepCounter++;
@@ -91,7 +97,7 @@ void loop() {
     if (Nixie.Time.Second % 6 == 1){
       // read barometer every 10 seconds
       Nixie.Baro.SetTemp(bmp085GetTemperature(bmp085ReadUT()));
-      Nixie.Baro.SetPressure(bmp085GetPressure(bmp085ReadUP()),(CurrentTime + TZ_offset + DST_offset));
+      //Nixie.Baro.SetPressure(bmp085GetPressure(bmp085ReadUP()),(CurrentTime + TZ_offset + DST_offset));
     }
     
     if (Nixie.Time.Minute != CurrentMin){
@@ -155,25 +161,26 @@ void loop() {
       //Normal Operation
       
       //Clock part:
-      if ((Nixie.Time.Second % 20 == 18)||(Nixie.Time.Second % 20 == 19)){
-          Nixie.ShowDate(Nixie.Time.Day, Nixie.Time.Month, Nixie.Time.Year);
+     
+      if (Nixie.Time.Second % Date_Interval >= Date_Interval - Date_Lenght){
+          Nixie.ShowDate();
           
-      } else {
-          Nixie.ShowTime(Nixie.Time.Hour, Nixie.Time.Minute, Nixie.Time.Second);
+      } else {        
+         Nixie.ShowTime();
       }
   
       //Weather info
       if (StepCounter == 1){
         //Show Pressure
-        Nixie.ShowPressure(Nixie.Baro.Pressure, Nixie.Baro.MinMaxLed);
+        Nixie.ShowPressure();
       } else {
         //Temp or humidity
         if (StepCounter % 2 == 0){
           //Temp 
-          Nixie.ShowTemp(StepCounter/ 2, ((int) (Nixie.RFSensor[StepCounter/2].Temp * 10)),Nixie.RFSensor[StepCounter/2].TempMinMaxLed);
+          Nixie.ShowTemp(StepCounter/ 2);
         } else {
           //Hum
-          Nixie.ShowHum(StepCounter/ 2, Nixie.RFSensor[StepCounter/2].Hum,Nixie.RFSensor[StepCounter/2].HumMinMaxLed);
+          Nixie.ShowHum(StepCounter/ 2);
         }
       }
       break;

@@ -1,27 +1,26 @@
-#define BackLight_Bright 250   // Brightness for backlight
-#define SecsPerStep 2          // Seconds per step
+#define _DST_offset 3600
+
 #define AntiBounceTime 100     // Anti bounce time for buttons in millisecs
-#define TZ_offset 3600         // Timezone offset in seconds
 #define MinMaxResetTime 15     // Timeout for Min / Max Display
-#define ScrSaver_Duration 30   // Screensaver duration in seconds
-#define ScrSaver_Interval 15   // Screensaver interval in minutes must be a devider of 60 eg: 1,2,3,4,5,6,10,12,15,20,30
 
 #define PulsesPerSec 20        // total pulses send to the display every seccond, used for blinking and screensaver
 #define PulseInterval 1000/PulsesPerSec 
 
-#define On_hr 7                // 
-#define On_min 30               // 
-#define Off_hr 0               // 
-#define Off_min 30             // 
- 
-#define On_time (On_hr * 60) + On_min // 
-#define Off_time (Off_hr * 60) + Off_min // 
-
-#define _DST_offset 3600
-
-#define WakeUp_time 10
-
 #define MaxSensors 2
+
+#define EEpromDatePerMin     0
+#define EEpromDateLength     1
+#define EEpromWeatherLength  2
+#define EEpromScrLength      3
+#define EEpromScrPerHour     4
+#define EEpromBackLightDay   5
+#define EEpromBackLightNight 6
+#define EEpromDayStartHour   7
+#define EEpromDayStartMin    8
+#define EEpromDayEndHour     9
+#define EEpromDayEndMin      10
+#define EEpromWakeup         11
+#define EEpromTimeZone       12
 
 const byte DST_dates [16] [5] = {
   {45, 3, 29, 10, 25},
