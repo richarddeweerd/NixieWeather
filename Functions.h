@@ -36,6 +36,38 @@ void ReadConfig(){
   TZ_offset = (t-24) * 3600;
 }
 
+void SaveTime(byte _val, byte _pos){
+  temp_tm.Hour = Nixie.Time.Hour;
+  temp_tm.Minute = Nixie.Time.Minute;
+  temp_tm.Second = Nixie.Time.Second;
+  temp_tm.Day = Nixie.Time.Day;
+  temp_tm.Month = Nixie.Time.Month;
+  temp_tm.Year = Nixie.Time.Year;
+  switch (_pos){
+    case 1:
+      temp_tm.Hour = _val;
+      break;
+    case 2:
+      temp_tm.Minute = _val;
+      break;
+    case 3:
+      temp_tm.Second = _val;
+      break;
+    case 4:
+      temp_tm.Day = _val;
+      break;
+    case 5:
+      temp_tm.Month = _val;
+      break;
+    case 6:
+      temp_tm.Year = _val;
+      break;
+  }
+  RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
+  setSyncProvider(RTC.get);  
+}
+
+
 void CheckDST(unsigned long cur_time){
   DST_offset=0;
 

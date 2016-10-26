@@ -32,7 +32,7 @@ void setup() {
       InitEEprom();
     }
   }
-  InitEEprom(); //Needed during development!!!!!!!!!!!!!!!!!
+  //InitEEprom(); //Needed during development!!!!!!!!!!!!!!!!!
   ReadConfig();
   
   Nixie.DimIntensity = Nixie.BackLightDay;  
@@ -147,12 +147,9 @@ void loop() {
   if (Run_Mode < 99 ){
     if (But_Up.hold(3000)){
       //Enter setup mode
-      But_Up.block();
-      
+      But_Up.block();      
       Run_Mode = 99;
-      Setup_Item = 0;
-      Setup_Subitem = 1;
-      SetupStart = true;
+      Setup_Item = 1;
     }    
   }
   
@@ -161,10 +158,9 @@ void loop() {
       //Normal Operation
       
       //Clock part:
-     
+      //First check if time or date should be shown
       if (Nixie.Time.Second % Date_Interval >= Date_Interval - Date_Lenght){
-          Nixie.ShowDate();
-          
+          Nixie.ShowDate();          
       } else {        
          Nixie.ShowTime();
       }
@@ -207,191 +203,107 @@ void loop() {
       break;
 
     case 99:
-      //setup
+      //Setup mode
       if (But_Front.hold(2000)){
-        //save / Exit setup mode
+        //Exit setup mode
         Run_Mode = 0;
+        Setup_Item = 0;
+        Nixie.ExitSetup();
       }
-      byte changed = 0;
-
+      if (But_Front.status(3000)){
+        //Next menu item
+        if (Run_Mode == 99){
+          if (Setup_Item <6){
+            Setup_Item++;
+          } else {
+            Setup_Item=1;
+          }
+        }
+      }
+      
+      byte ValChanged = 0;
+      
       switch (Setup_Item){
-        case 0:     
-          //set time
-          if (SetupStart){
-            SetupVal = Nixie.Time.Hour;
-            SetupStart = false;
-          }
-          if (But_Front.status(3000)){            
-            switch (Setup_Subitem){
-              case 1:
-                Setup_Subitem++;
-                temp_tm.Hour = SetupVal;
-                temp_tm.Minute = Nixie.Time.Minute;
-                temp_tm.Second = Nixie.Time.Second;
-                temp_tm.Day = Nixie.Time.Day;
-                temp_tm.Month = Nixie.Time.Month;
-                temp_tm.Year = Nixie.Time.Year;
-                RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
-                setSyncProvider(RTC.get);
-                SetupVal = Nixie.Time.Minute;
-                break;
-              case 2:
-                temp_tm.Hour = Nixie.Time.Hour;
-                temp_tm.Minute = SetupVal;
-                temp_tm.Second = Nixie.Time.Second;
-                temp_tm.Day = Nixie.Time.Day;
-                temp_tm.Month = Nixie.Time.Month;
-                temp_tm.Year = Nixie.Time.Year;
-                RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
-                setSyncProvider(RTC.get);
-                
-                Setup_Subitem++;
-                break;
-              case 3:
-                Setup_Item = 1;
-                Setup_Subitem = 1;
-                SetupStart = true;
-                SetupVal = Nixie.Time.Day;
-
-                break;
-            }
-          }
-
-          switch (Setup_Subitem){
-            case 1:
-              //Hour
-              if (But_Up.status(1000,250)){
-                changed = 1;
-                SetupVal = incMax(SetupVal, 0, 23);
-                //SetupVal = 11;
-              }
-              if (But_Down.status(1000,250)){
-                changed = 1;            
-                SetupVal = decMax(SetupVal, 0, 23);
-              }
-              Nixie.SetupClock(SetupVal, Nixie.Time.Minute, Nixie.Time.Second, Setup_Subitem, changed);
-              break;
-            case 2:
-              //Minute
-              if (But_Up.status(1000,250)){
-                changed = 1;
-                SetupVal = incMax(SetupVal, 0, 59);
-                //SetupVal = 11;
-              }
-              if (But_Down.status(1000,250)){
-                changed = 1;            
-                SetupVal = decMax(SetupVal, 0, 59);
-              }
-              Nixie.SetupClock(Nixie.Time.Hour, SetupVal, Nixie.Time.Second, Setup_Subitem, changed);
-              break;
-            case 3:
-              //Sec
-              if (But_Up.status(1000,250)||But_Down.status(1000,400)){
-                temp_tm.Hour = Nixie.Time.Hour;
-                temp_tm.Minute = Nixie.Time.Minute;
-                temp_tm.Second = 0;
-                temp_tm.Day = Nixie.Time.Day;
-                temp_tm.Month = Nixie.Time.Month;
-                temp_tm.Year = Nixie.Time.Year;
-                RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
-                setSyncProvider(RTC.get);
-              }
-              Nixie.SetupClock(Nixie.Time.Hour, Nixie.Time.Minute, Nixie.Time.Second, Setup_Subitem, changed);                
-              break;
-          }
-          break;
-  
         case 1:
-          //set date
-
-          if (But_Front.status(3000)){            
-            switch (Setup_Subitem){
-              case 1:
-                Setup_Subitem++;
-                temp_tm.Hour = Nixie.Time.Hour;
-                temp_tm.Minute = Nixie.Time.Minute;
-                temp_tm.Second = Nixie.Time.Second;
-                temp_tm.Day = SetupVal;
-                temp_tm.Month = Nixie.Time.Month;
-                temp_tm.Year = Nixie.Time.Year;
-                RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
-                setSyncProvider(RTC.get);
-                SetupVal = Nixie.Time.Month;
-                break;
-              case 2:
-                temp_tm.Hour = Nixie.Time.Hour;
-                temp_tm.Minute = Nixie.Time.Minute;
-                temp_tm.Second = Nixie.Time.Second;
-                temp_tm.Day = Nixie.Time.Day;
-                temp_tm.Month = SetupVal;
-                temp_tm.Year = Nixie.Time.Year;
-                RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
-                
-                setSyncProvider(RTC.get);      
-                SetupVal = Nixie.Time.Year;                
-                Setup_Subitem++;
-                break;
-              case 3:
-                temp_tm.Hour = Nixie.Time.Hour;
-                temp_tm.Minute = Nixie.Time.Minute;
-                temp_tm.Second = Nixie.Time.Second;
-                temp_tm.Day = Nixie.Time.Day;
-                temp_tm.Month = Nixie.Time.Month;
-                temp_tm.Year = SetupVal;
-                RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
-                setSyncProvider(RTC.get);
-                Setup_Item = 0;
-                Setup_Subitem = 1;
-                SetupStart = true;
-                break;
-            }
+          //set hour
+          if (But_Up.status(1000,250)){
+            ValChanged = 1;
+            SetupVal = incMax(Nixie.Time.Hour, 0, 23);
+            SaveTime(SetupVal,1);
           }
-
-          switch (Setup_Subitem){
-            case 1:
-              //Day
-              if (But_Up.status(1000,250)){
-                changed = 1;
-                SetupVal = incMax(SetupVal, 1, 31);
-                //SetupVal = 11;
-              }
-              if (But_Down.status(1000,250)){
-                changed = 1;            
-                SetupVal = decMax(SetupVal, 1, 31);
-              }
-              Nixie.SetupDate(SetupVal, Nixie.Time.Month, Nixie.Time.Year, Setup_Subitem, changed);
-              break;
-            case 2:
-              //Month
-              if (But_Up.status(1000,2500)){
-                changed = 1;
-                SetupVal = incMax(SetupVal, 1, 12);
-                //SetupVal = 11;
-              }
-              if (But_Down.status(1000,250)){
-                changed = 1;            
-                SetupVal = decMax(SetupVal, 1, 12);
-              } 
-              Nixie.SetupDate(Nixie.Time.Day, SetupVal, Nixie.Time.Year, Setup_Subitem, changed);
-              break;
-            case 3:
-              //Year
-              if (But_Up.status(1000,250)){
-                changed = 1;
-                SetupVal = incMax(SetupVal, 0, 99);
-                //SetupVal = 11;
-              }
-              if (But_Down.status(1000,250)){
-                changed = 1;            
-                SetupVal = decMax(SetupVal, 0, 99);
-              }
-              Nixie.SetupDate(Nixie.Time.Day, Nixie.Time.Month, SetupVal, Setup_Subitem, changed);                
-              break;
+          if (But_Down.status(1000,250)){
+            ValChanged = 1;            
+            SetupVal = decMax(Nixie.Time.Hour, 0, 23);
+            SaveTime(SetupVal,1);
           }
+          Nixie.SetupClock(1,ValChanged);
           break;
-          
+        case 2:
+          //set minute
+          if (But_Up.status(1000,250)){
+            ValChanged = 1;
+            SetupVal = incMax(Nixie.Time.Minute, 0, 59);
+            SaveTime(SetupVal,2);
+          }
+          if (But_Down.status(1000,250)){
+            ValChanged = 1;            
+            SetupVal = decMax(Nixie.Time.Minute, 0, 59);
+            SaveTime(SetupVal,2);
+          }          
+          Nixie.SetupClock(2,ValChanged);
+          break;
+        case 3:
+          //set seccond
+          if (But_Up.status(1000,250)||But_Down.status(1000,250)){
+            ValChanged = 1;            
+            SaveTime(0,3);
+          }          
+          Nixie.SetupClock(3,ValChanged);
+          break;
+        case 4:
+          //set year
+           if (But_Up.status(1000,250)){
+            ValChanged = 1;
+            SetupVal = incMax(Nixie.Time.Year, 0, 99);
+            SaveTime(SetupVal,6);
+          }
+          if (But_Down.status(1000,250)){
+            ValChanged = 1;            
+            SetupVal = decMax(Nixie.Time.Year, 0, 99);
+            SaveTime(SetupVal,6);
+          }
+          Nixie.SetupClock(6,ValChanged);
+          break;            
+        case 5:
+          //set month
+           if (But_Up.status(1000,250)){
+            ValChanged = 1;
+            SetupVal = incMax(Nixie.Time.Month, 1, 12);
+            SaveTime(SetupVal,5);
+          }
+          if (But_Down.status(1000,250)){
+            ValChanged = 1;            
+            SetupVal = decMax(Nixie.Time.Month, 1, 12);
+            SaveTime(SetupVal,5);
+          }
+          Nixie.SetupClock(5,ValChanged);
+          break;
+        case 6:
+          //set day
+           if (But_Up.status(1000,250)){
+            ValChanged = 1;
+            SetupVal = incMax(Nixie.Time.Day, 1, 31);
+            SaveTime(SetupVal,4);
+          }
+          if (But_Down.status(1000,250)){
+            ValChanged = 1;            
+            SetupVal = decMax(Nixie.Time.Day, 1, 31);
+            SaveTime(SetupVal,4);
+          }
+          Nixie.SetupClock(4,ValChanged);
+          break;
       }
-   break;    
+      break;    
   }
 
   Nixie.Pulse();

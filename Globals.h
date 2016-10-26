@@ -29,7 +29,6 @@ TimeElements temp_tm;
 
 byte Run_Mode = 0;
 byte Setup_Item = 0;
-byte Setup_Subitem = 0;
 
 time_t CurrentTime = 0;
 
@@ -60,6 +59,6 @@ unsigned long B_Min_Max_Start;
 unsigned long B_Min_Max_Last;
 
 int SetupVal;
-bool SetupStart = true;
+
 
 byte WakeUp = 0;
