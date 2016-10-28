@@ -7,8 +7,7 @@ Button But_Down(Button_Down_Pin, 1, 20);
 int TZ_offset;                  // Timezone offset in seconds
 byte  WakeUp_time;
 
-byte SecsPerStep;           // Seconds per step
-
+byte WeatherLength;           // Seconds per step
 int Date_Interval;
 byte Date_Lenght;
 

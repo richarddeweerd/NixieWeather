@@ -1,3 +1,5 @@
+#define CodeVersion 905
+
 #include <avr/pgmspace.h>
 #include "Nixie.h"
 #include "PinDef.h"
@@ -37,8 +39,6 @@ void setup() {
   
   Nixie.DimIntensity = Nixie.BackLightDay;  
   Nixie.Disp_Test(); 
-  
-
  
   //init all time registers:
   CheckDST(now());
@@ -73,11 +73,13 @@ void loop() {
     CurrentTime = now();
     breakTime ((CurrentTime + TZ_offset + DST_offset),Nixie.Time);
     
-    if (((CurrentMin % (60/ScrSaver_Interval)) == 0)&&((60 - ScrSaver_Duration) == Nixie.Time.Second )){
-       //Nixie.ScreenSaverStart(ScrSaver_Duration,tm.Hour,tm.Minute, tm.Second, Baro.Pressure);
-    }
-    
-    if (SecCounter == SecsPerStep){
+    //
+    if (Run_Mode == 0 ){  
+      if (((CurrentMin % (60/ScrSaver_Interval)) == 0)&&((60 - ScrSaver_Duration) == Nixie.Time.Second )){
+        Nixie.ScreenSaverStart(ScrSaver_Duration);
+      }
+    }   
+    if (SecCounter == WeatherLength){
       SecCounter = 0;
       StepCounter++;
       if (StepCounter > Steps)
@@ -97,13 +99,14 @@ void loop() {
     if (Nixie.Time.Second % 6 == 1){
       // read barometer every 10 seconds
       Nixie.Baro.SetTemp(bmp085GetTemperature(bmp085ReadUT()));
-      //Nixie.Baro.SetPressure(bmp085GetPressure(bmp085ReadUP()),(CurrentTime + TZ_offset + DST_offset));
+      Nixie.Baro.SetPressure(bmp085GetPressure(bmp085ReadUP()),(CurrentTime + TZ_offset + DST_offset));
+      //Nixie.Baro.SetPressure(TZ_offset,(CurrentTime + TZ_offset + DST_offset));
     }
     
     if (Nixie.Time.Minute != CurrentMin){
       //New Minute!
       CurrentMin=Nixie.Time.Minute;
-      // Check if nighmode is enabled
+      // Check if nightmode is enabled
       if (WakeUp == 0){
         NightMode_on(Nixie.Time.Hour, Nixie.Time.Minute);
       }
@@ -187,7 +190,6 @@ void loop() {
     
     case 2:
       //ScreenSaver
-      Nixie.ScreenSaverPulse();
       if (Nixie.ScreenSaverActive == 0 ){
         Run_Mode = 0;
       }
@@ -213,10 +215,15 @@ void loop() {
       if (But_Front.status(3000)){
         //Next menu item
         if (Run_Mode == 99){
-          if (Setup_Item <6){
+          if (Setup_Item <14){
             Setup_Item++;
           } else {
-            Setup_Item=1;
+            Setup_Item=0;
+          }
+          if (Setup_Item == 14){
+              Nixie.DimmerStart(Nixie.BackLightNight,5);
+          } else {
+              Nixie.DimmerStart(Nixie.BackLightDay,5);
           }
         }
       }
@@ -224,6 +231,10 @@ void loop() {
       byte ValChanged = 0;
       
       switch (Setup_Item){
+        case 0:
+          //version
+          Nixie.ShowCodeVersion(CodeVersion);
+          break;
         case 1:
           //set hour
           if (But_Up.status(1000,250)){
@@ -302,6 +313,138 @@ void loop() {
           }
           Nixie.SetupClock(4,ValChanged);
           break;
+        case 7:
+          //TimeZone
+          SetupVal = EEPROM.read(EEpromTimeZone);  
+          SetupVal = (SetupVal-24);
+          if (But_Up.status(1000,250)){
+            SetupVal = incMaxint(SetupVal, -12, 12);
+            SetTimeZone(SetupVal);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMaxint(SetupVal, -12, 12);
+            SetTimeZone(SetupVal);
+          }          
+          Nixie.SetupPage(menuArr[Setup_Item],SetupVal);
+          break;
+        case 8:
+          //Date interval
+          SetupVal = EEPROM.read(EEpromDatePerMin); 
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 1, 6);
+            SetDateInterval(SetupVal);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 1, 6);
+            SetDateInterval(SetupVal);
+          }          
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)SetupVal);
+          break;
+        case 9:
+          //Date length
+          SetupVal = EEPROM.read(EEpromDateLength);  
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 1, 5);
+            SetDateLength(SetupVal);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 1, 5);
+            SetDateLength(SetupVal);
+          }          
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)SetupVal);
+          break;
+        case 10:
+          //Weather length
+          SetupVal = EEPROM.read(EEpromWeatherLength);  
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 1, 5);
+            SetWeatherLength(SetupVal);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 1, 5);
+            SetWeatherLength(SetupVal);
+          }          
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)SetupVal);          
+          break;
+        case 11:
+          //Screensaver interval
+          SetupVal = ScrSaver_Interval;
+          for (byte y = 0;y<12;y++){
+            if (minuteArr[y] == SetupVal){
+              SetupVal = y;
+            }
+          }
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 0, 11);
+            SetScreenSaverInterval(minuteArr[SetupVal]);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 0, 11);
+            SetScreenSaverInterval(minuteArr[SetupVal]);
+          }            
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)minuteArr[SetupVal]);      
+          break;
+        case 12:
+          //Screensaver length
+          SetupVal = ScrSaver_Duration - 2;
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 3, 30, 3);
+            SetScreenSaverLength(SetupVal);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 3, 30, 3);
+            SetScreenSaverLength(SetupVal);
+          }    
+          
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)SetupVal);      
+          break;
+        case 13:
+          //Backlight Day
+          SetupVal = Nixie.BackLightDay;
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 0, 255);
+            SetBacklightDay(SetupVal);
+            Nixie.DimmerStart(Nixie.BackLightDay,5);  
+        }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 0, 255);
+            SetBacklightDay(SetupVal);
+            Nixie.DimmerStart(Nixie.BackLightDay,5);  
+          }              
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)SetupVal);      
+          break;
+        case 14:
+          //Backlight Night
+          SetupVal = Nixie.BackLightNight;
+          if (But_Up.status(1000,250)){
+            SetupVal = incMax(SetupVal, 0, 255);
+            SetBacklightNight(SetupVal);
+            Nixie.DimmerStart(Nixie.BackLightNight,5);
+          }
+          if (But_Down.status(1000,250)){
+            SetupVal = decMax(SetupVal, 0, 255);
+            SetBacklightNight(SetupVal);
+            Nixie.DimmerStart(Nixie.BackLightNight,5);   
+          }                        
+          Nixie.SetupPage(menuArr[Setup_Item],(byte)SetupVal);      
+          break;
+        case 15:
+          //Day start hour
+          break;
+        case 16:
+          //Day start minute
+          break;
+        case 17:
+          //Day end hour
+          break;
+        case 18:
+          //Day end minute
+          break;
+        case 19:
+          //wakeup time
+          break;
+
+          
       }
       break;    
   }

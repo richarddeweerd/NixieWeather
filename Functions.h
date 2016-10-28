@@ -2,12 +2,65 @@ void InitIO(){
   pinMode(Receiver_Pin, INPUT);
 }
 
+void ReadTimeZone(){
+  int t = EEPROM.read(EEpromTimeZone);  
+  TZ_offset = (t-24) * 3600; 
+}
+
+void SetTimeZone(int _to){    
+    _to = _to + 24;
+    EEPROM.write(EEpromTimeZone,(byte)_to);
+    ReadTimeZone();
+}
+
+void ReadDateInterval(){
+  Date_Interval = EEPROM.read(EEpromDatePerMin);
+  Date_Interval = (int) 60 / Date_Interval;  
+}
+
+void SetDateInterval(int _di){    
+    EEPROM.write(EEpromDatePerMin,(byte)_di);
+    ReadDateInterval();
+}
+
+void SetDateLength(int _dl){
+    EEPROM.write(EEpromDateLength,(byte)_dl);
+    Date_Lenght = _dl;
+}
+
+void SetWeatherLength(int _wl){
+    EEPROM.write(EEpromWeatherLength,(byte)_wl);
+    WeatherLength = _wl;
+}
+
+void SetScreenSaverInterval(int _si){
+    EEPROM.write(EEpromScrPerHour,(byte)_si);
+    ScrSaver_Interval = _si;
+}
+
+void SetScreenSaverLength(int _sl){
+    EEPROM.write(EEpromScrLength,(byte)_sl);
+    ScrSaver_Duration = _sl + 2;
+}
+
+void SetBacklightDay(int _bl){
+    EEPROM.write(EEpromBackLightDay,(byte)_bl);
+    Nixie.BackLightDay = _bl;
+}
+
+void SetBacklightNight(int _bl){
+    EEPROM.write(EEpromBackLightNight,(byte)_bl);
+    Nixie.BackLightNight = _bl;
+}
+
+
 void InitEEprom(){
+  EEPROM.write(EEpromTimeZone,        25);
   EEPROM.write(EEpromDatePerMin,      3);
   EEPROM.write(EEpromDateLength,      2);
   EEPROM.write(EEpromWeatherLength,   2);
-  EEPROM.write(EEpromScrLength,       20);
-  EEPROM.write(EEpromScrPerHour,      6);
+  EEPROM.write(EEpromScrLength,       18);
+  EEPROM.write(EEpromScrPerHour,      60);
   EEPROM.write(EEpromBackLightDay,    250);
   EEPROM.write(EEpromBackLightNight,  50);
   EEPROM.write(EEpromDayStartHour,    7);
@@ -15,15 +68,14 @@ void InitEEprom(){
   EEPROM.write(EEpromDayEndHour,      0);
   EEPROM.write(EEpromDayEndMin,       30);
   EEPROM.write(EEpromWakeup,          20);
-  EEPROM.write(EEpromTimeZone,        25);
 }
 
+
 void ReadConfig(){
-  Date_Interval = EEPROM.read(EEpromDatePerMin);
-  Date_Interval = (int) 60 / Date_Interval;
+  ReadDateInterval();
   Date_Lenght = EEPROM.read(EEpromDateLength);
-  SecsPerStep = EEPROM.read(EEpromWeatherLength);
-  ScrSaver_Duration = EEPROM.read(EEpromScrLength);
+  WeatherLength = EEPROM.read(EEpromWeatherLength);
+  ScrSaver_Duration = EEPROM.read(EEpromScrLength) + 2;
   ScrSaver_Interval = EEPROM.read(EEpromScrPerHour);
   Nixie.BackLightDay = EEPROM.read(EEpromBackLightDay);
   Nixie.BackLightNight = EEPROM.read(EEpromBackLightNight);
@@ -32,8 +84,7 @@ void ReadConfig(){
   //EEPROM.read(EEpromDayEndHour);
   //EEPROM.read(EEpromDayEndMin);
   WakeUp_time = EEPROM.read(EEpromWakeup);
-  int t = EEPROM.read(EEpromTimeZone);  
-  TZ_offset = (t-24) * 3600;
+  ReadTimeZone();
 }
 
 void SaveTime(byte _val, byte _pos){
@@ -66,6 +117,7 @@ void SaveTime(byte _val, byte _pos){
   RTC.set(makeTime(temp_tm) - (TZ_offset+DST_offset));
   setSyncProvider(RTC.get);  
 }
+
 
 
 void CheckDST(unsigned long cur_time){
@@ -102,7 +154,30 @@ void CheckDST(unsigned long cur_time){
 }
 
 byte incMax(byte val, byte minimum, byte maximum){
+  //increse a byte by 1. 
+  //if the maximum is passed then the value will be the minimum
   byte result = val;
+  result++;
+  if (val >= maximum){
+    result = minimum;
+  }
+  return result;
+}
+byte incMax(byte val, byte minimum, byte maximum, byte stp){
+  //increse a byte by stp. 
+  //if the maximum is passed then the value will be the minimum
+  byte result = val;
+  result = result + stp;
+  if (val >= maximum){
+    result = minimum;
+  }
+  return result;
+}
+
+int incMaxint(int val, int minimum, int maximum){
+  //increse an int by 1. 
+  //if the maximum is passed then the value will be the minimum
+  int result = val;
   result++;
   if (val >= maximum){
     result = minimum;
@@ -111,6 +186,8 @@ byte incMax(byte val, byte minimum, byte maximum){
 }
 
 byte decMax(byte val, byte minimum, byte maximum){
+  //decrese a byte by 1. 
+  //if the minimum is passed then the value will be the maximum
   byte result = val;
   result--;
   if (val == minimum){
@@ -118,7 +195,27 @@ byte decMax(byte val, byte minimum, byte maximum){
   }
   return result;
 }
+byte decMax(byte val, byte minimum, byte maximum, byte stp){
+  //decrese a byte by stp. 
+  //if the minimum is passed then the value will be the maximum
+  byte result = val;
+  result = result - stp;
+  if (val == minimum){
+    result = maximum;
+  }
+  return result;
+}
 
+int decMaxint(int val, int minimum, int maximum){
+  //decrese an int by 1. 
+  //if the minimum is passed then the value will be the maximum
+  int result = val;
+  result--;
+  if (val == minimum){
+    result = maximum;
+  }
+  return result;
+}
 
 void ResyncWeatherInfo(){
   SecCounter = 0;

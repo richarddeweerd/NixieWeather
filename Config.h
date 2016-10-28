@@ -8,19 +8,19 @@
 
 #define MaxSensors 2
 
-#define EEpromDatePerMin     0
-#define EEpromDateLength     1
-#define EEpromWeatherLength  2
-#define EEpromScrLength      3
+#define EEpromTimeZone       0
+#define EEpromDatePerMin     1
+#define EEpromDateLength     2
+#define EEpromWeatherLength  3
 #define EEpromScrPerHour     4
-#define EEpromBackLightDay   5
-#define EEpromBackLightNight 6
-#define EEpromDayStartHour   7
-#define EEpromDayStartMin    8
-#define EEpromDayEndHour     9
-#define EEpromDayEndMin      10
-#define EEpromWakeup         11
-#define EEpromTimeZone       12
+#define EEpromScrLength      5
+#define EEpromBackLightDay   6
+#define EEpromBackLightNight 7
+#define EEpromDayStartHour   8
+#define EEpromDayStartMin    9
+#define EEpromDayEndHour     10
+#define EEpromDayEndMin      11
+#define EEpromWakeup         12
 
 const byte DST_dates [16] [5] = {
   {45, 3, 29, 10, 25},
@@ -41,3 +41,5 @@ const byte DST_dates [16] [5] = {
   {60, 3, 26, 10, 29},
 };
 
+byte minuteArr[] = {1,2,3,4,5,6,10,12,15,20,30,60};
+byte menuArr[] = {0,1,1,1,2,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
