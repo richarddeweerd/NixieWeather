@@ -6,8 +6,6 @@
 #define PulsesPerSec 20        // total pulses send to the display every seccond, used for blinking and screensaver
 #define PulseInterval 1000/PulsesPerSec 
 
-#define MaxSensors 2
-
 #define EEpromTimeZone       0
 #define EEpromDatePerMin     1
 #define EEpromDateLength     2

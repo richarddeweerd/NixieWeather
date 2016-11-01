@@ -21,6 +21,7 @@ byte ScrSaver_Interval;   // Screensaver interval in minutes must be a devider o
 #define On_time (On_hr * 60) + On_min // 
 #define Off_time (Off_hr * 60) + Off_min // 
 
+int dbg=0;
 
 byte SensorCount=0;
 
@@ -50,7 +51,7 @@ byte ScreenSaver = 0;
 
 byte SecCounter = 0;
 byte StepCounter = 1;
-byte Steps = 0;
+byte WeatherSteps = 0;
 
 boolean B_Min_Max;
 boolean MinMaxReset;
@@ -59,5 +60,6 @@ unsigned long B_Min_Max_Last;
 
 int SetupVal;
 
-
 byte WakeUp = 0;
+
+byte SensorArr[3];

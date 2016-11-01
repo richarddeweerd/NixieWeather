@@ -34,7 +34,7 @@ void setup() {
       InitEEprom();
     }
   }
-  //InitEEprom(); //Needed during development!!!!!!!!!!!!!!!!!
+  
   ReadConfig();
   
   Nixie.DimIntensity = Nixie.BackLightDay;  
@@ -63,6 +63,10 @@ void loop() {
   But_Up.check();
   But_Down.check();
   
+  //debug info
+  //Nixie.Baro.SetPressure(SensorCount,(CurrentTime + TZ_offset + DST_offset));  
+  //Nixie.SetupPage(0,dbg);            
+  
   if (now() != CurrentTime){
     //New Seccond
     Sec_Start=millis();
@@ -82,7 +86,7 @@ void loop() {
     if (SecCounter == WeatherLength){
       SecCounter = 0;
       StepCounter++;
-      if (StepCounter > Steps)
+      if (StepCounter > WeatherSteps)
       {
         StepCounter = 1;
       }
@@ -95,12 +99,12 @@ void loop() {
         Run_Mode = 3;
       }      
     }
-       
+
     if (Nixie.Time.Second % 6 == 1){
       // read barometer every 10 seconds
       Nixie.Baro.SetTemp(bmp085GetTemperature(bmp085ReadUT()));
       Nixie.Baro.SetPressure(bmp085GetPressure(bmp085ReadUP()),(CurrentTime + TZ_offset + DST_offset));
-      //Nixie.Baro.SetPressure(TZ_offset,(CurrentTime + TZ_offset + DST_offset));
+
     }
     
     if (Nixie.Time.Minute != CurrentMin){
@@ -167,8 +171,10 @@ void loop() {
       } else {        
          Nixie.ShowTime();
       }
-  
+      
+      
       //Weather info
+      //
       if (StepCounter == 1){
         //Show Pressure
         Nixie.ShowPressure();
@@ -176,10 +182,10 @@ void loop() {
         //Temp or humidity
         if (StepCounter % 2 == 0){
           //Temp 
-          Nixie.ShowTemp(StepCounter/ 2);
+          Nixie.ShowTemp(SensorArr[(StepCounter/ 2)-1]);
         } else {
           //Hum
-          Nixie.ShowHum(StepCounter/ 2);
+          Nixie.ShowHum(SensorArr[(StepCounter/ 2)-1]);
         }
       }
       break;
@@ -454,8 +460,8 @@ void loop() {
   if (PacketDone) {
     // Received a RF packet
     memcpy(&WorkPacket,&FinishedPacket,PACKET_SIZE);
-    ParsePacket(WorkPacket);
+    ParsePacket(WorkPacket);    
     PacketDone=0;
-    Steps = 1 + (SensorCount * 2);    
+    
   }
 }
